@@ -8,25 +8,29 @@ Note: remember to switch the part `http://localhost:8080` with your db local add
 
 
 
-Please for User use the following EndPoint:
+Please for <b>`User`</b> use the following EndPoint:
 
 
-Find all Users: <br>
+Find all Users `(/users)`: <br>
+
 GET `http://localhost:8080/users` 
 
-Find User by Id:<br>
+Find User by Id `(/users/:id)`:<br>
+
 GET `http://localhost:8080/users/:id`   
 
-Create new User :<br>
+Create new User `(/users/create)`:<br>
+
 POST `http://localhost:8080/users/create`
 
-Update User by Id:<br>
+Update User by Id `(/users/update/:id)`:<br>
+
 PUT `http://localhost:8080/users/update/:id`
 
-Update User password By Id:<br>
+Update User password By Id `(/users/update/password/:id)`:<br>
 PUT `http://localhost:8080/users/update/password/:id`
 
-Delete User by Id:<br>
+Delete User by Id `(/users/delete/:id)`:<br>
 DELETE `http://localhost:8080/users/delete/:id`
 
 
