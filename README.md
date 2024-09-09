@@ -1,5 +1,5 @@
 <h2>WORK IN PROGRESS</h2>
-## Description
+## Description <br>
 Welcome to my first Back End repository built with NestJS and associated with an SQL (MySQL) server using TypeORM. This project is intended to be used in conjunction with my Adventure's Journal Front End. This repository will manage the back end of that project, handling all RESTful API calls and the back end server logic. 
 Please note: To use this repository, you will need to create your own relational database (MySQL) locally or connect it to one that you own. Finally (for both way, remember to create the right table, see entity, or use "<i>synchronize : true</i>" in the connection params). Finally remember to update the database connection settings in <b>app.module.ts</b>.
 
