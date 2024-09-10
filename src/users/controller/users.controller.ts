@@ -1,12 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes } from '@nestjs/common';
 import { UsersService } from '../service/users.service'; 
-import { Users } from '../entities/users.entity'; 
-import { finderIdDto } from 'src/dto/find-id-user.dto';
+import { Users } from '../entities/users.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { updateUserPasswordDto } from '../dto/update-password-user.dto';
+import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 
-@Controller('users')
+@Controller('user')
 export class UsersController {
 
     constructor(private readonly usersService:UsersService){}
@@ -17,37 +17,46 @@ export class UsersController {
         return this.usersService.findAll();
     }
 
+    @Get("/findby-email")
+    async getUserByEmail(@Query("email") email:string):Promise<Users>{
+        return this.usersService.findUserByEmail(email);
+    }
+
     @Get("/:id")
-    async getUserId(@Param('id') id:number):Promise<Users>{
+    async getUserId(@Param('id',ParseIntPipe) id:number):Promise<Users>{
         return this.usersService.findUserById(id);
     }
 
     //inviamo una promise in modo che il front possa manipolare il promise in caso di successo o fallimento!
     @Post("/create")
+    @UsePipes(new ValidateDtoPipe(CreateUserDto))
     async createUser(@Body() createUserDto:CreateUserDto):Promise<Users>{
         return this.usersService.createUser(createUserDto);
     }
 
-    @Delete("/delete/:id")
-    async deleteUser(@Param("id") id:number):Promise<Users>{
-        return this.usersService.deleteUser(id);
-    }
-
     @Put("/update/:id")
+    @UsePipes(new ValidateDtoPipe(UpdateUserDto))
     async updateUser(
-        @Param("id") id:number,
+        @Param("id",ParseIntPipe) id:number,
         @Body() updateUser:UpdateUserDto
     ){
         return this.usersService.updateUser(id,updateUser);
     }
 
     @Put("/update/password/:id")
+    @UsePipes(new ValidateDtoPipe(updateUserPasswordDto))
     async updateUserPassword(
-        @Param("id") id:number,
+        @Param("id",ParseIntPipe) id:number,
         @Body() updatePassword:updateUserPasswordDto
     ){
         return this.usersService.updateUserPassword(id,updatePassword);
     }
+    
+    @Delete("/delete/:id")
+    async deleteUser(@Param("id",ParseIntPipe) id:number):Promise<Users>{
+        return this.usersService.deleteUser(id);
+    }
+
 
 
 }

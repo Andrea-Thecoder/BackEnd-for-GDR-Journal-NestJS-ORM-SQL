@@ -15,7 +15,7 @@ import { updateUserPasswordDto } from '../dto/update-password-user.dto';
 export class UsersService {
 
     constructor(
-        @InjectRepository(Users)//nome dell'entità
+        @InjectRepository(Users)//nome dell'entità, vanno sempre iniettati nei servizi 
         private readonly usersRepository:Repository<Users>,
     ){}
 
@@ -23,8 +23,10 @@ export class UsersService {
     async findAll():Promise<Users[]>{
         try{ //ricorda con async await c'e quasi sempre necessità del blocco try catch, esso gestisce handling degli errori legati all'asincronismo.
             const users:Users[] = await this.usersRepository.find();
+
             //notfound si usa quando la query non restituisce nulla
-            if(users.length <= 0) throw new NotFoundException("No users are in DB");
+            if(users.length <= 0 || !users) throw new NotFoundException("No users are in DB");
+            
             return users;
         }
         catch(error){
@@ -38,7 +40,7 @@ export class UsersService {
 
     async findUserById(id:number):Promise<Users> {
         try{
-            if (!id || id<=0) throw new BadRequestException("Id value no permitted. They be positive and greater than 0");
+            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
             const user:Users | null = await this.usersRepository.findOne({where: {id}});
             if(!user) 
@@ -55,14 +57,37 @@ export class UsersService {
         }
     }
 
+    async findUserByEmail(email:string):Promise<Users> {
+        try {
+            if(!email || typeof email !=="string") throw new BadRequestException("Invalid email value");
+            
+            email = email.toLocaleLowerCase().trim();
+
+            const user:Users | null = await this.usersRepository.findOne({where: {email}});
+            if(!user) 
+                throw new NotFoundException(`User with this email: ${email} not exist!`); 
+
+        return user;
+        } 
+        catch (error) {
+             if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
+        }
+        
+    }
+
     async createUser(userDto:CreateUserDto):Promise<Users> {
         try{
             //normalizzazione dei dati
             const userDtoClear:CreateUserDto = await this.capitalizeDtoObject<CreateUserDto>(userDto);
-            const {email} = userDtoClear
+            const {email} = userDtoClear;
+
+            if(!email || typeof email !=="string") throw new BadRequestException("Invalid email value");
 
             //Ricerca dell'user, se esiste deve throw un errore i nquanto non si può creare l'account
-            const userExist:Users = await this.usersRepository.findOne({where :{email:email}})
+            const userExist:Users = await this.usersRepository.findOne({where :{email}})
             if(userExist) throw new BadRequestException("Email(and user) already exist!")
 
             //il repository ha la funzione Crea, che prepara l'oggetto per poi essre salvato nel db. in caso di relazioni 1:1 possiamo inserire direttamente i dati della tabella dipendente dalla principale (ovvero dove c'e la FK) nell'oggetto che esso viene qui creato, creando cosi di fatto la relazione autoamticamente. assenga in modo automatico i campi AI (auto generanti) e la FK. Nota: questo è un metodo automatizato da typeORM , in alternativa avremmo potuto creare un istanza nel classico modo (come ho appreso su java).
@@ -81,33 +106,10 @@ export class UsersService {
         }
     }
 
-
-    async deleteUser(id:number):Promise<Users>{
-
-        try {
-            if (!id || id<=0) throw new BadRequestException("Id value no permitted. They be positive and greater than 0");
-
-            const user:Users | null = await this.usersRepository.findOne({where: {id}});
-            if(!user) throw new  BadRequestException("User not exist!")
-
-            //ritorna l'intera entità che è stata cancellata.
-            const deletedUser: Users = await this.usersRepository.remove(user);
-
-            return deletedUser;
-
-        }
-        catch(error){
-            if (error instanceof NotFoundException || error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
-        }
-    }
-
     async updateUser(id:number,updateDto:UpdateUserDto):Promise<Users>{
 
         try{
-            if (!id || id<=0) throw new BadRequestException("Id value no permitted. They be positive and greater than 0");
+            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
             const user:Users | null = await this.usersRepository.findOne({where: {id}});
             if(!user) throw new  BadRequestException("User not exist!")
@@ -130,7 +132,7 @@ export class UsersService {
 
     async updateUserPassword(id:number, passwordDto:updateUserPasswordDto ): Promise<Users> {
     try{
-        if (!id || id<=0) throw new BadRequestException("Id value no permitted. They be positive and greater than 0");
+        if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
         const user:Users | null = await this.usersRepository.findOne({where: {id}});
         if(!user) throw new  BadRequestException("User not exist!")
@@ -159,6 +161,28 @@ export class UsersService {
 
     }
 
+    async deleteUser(id:number):Promise<Users>{
+
+        try {
+            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
+
+            const user:Users | null = await this.usersRepository.findOne({where: {id}});
+            if(!user) throw new  BadRequestException("User not exist!")
+
+            //ritorna l'intera entità che è stata cancellata.
+            const deletedUser: Users = await this.usersRepository.remove(user);
+
+            return deletedUser;
+
+        }
+        catch(error){
+            if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
+        }
+    }
+
 
 
 
@@ -167,14 +191,15 @@ export class UsersService {
     private async capitalizeDtoObject <T>(dto: T):Promise<T> {
 
         for (let [key,value] of Object.entries(dto)){
-
-            if (typeof value === "string" && key != "email") 
-                dto[key] = capitalizeFirstLetter(value) as any;
-            if(typeof value === "string" && key === "email")
-                dto[key] = value.toLowerCase().trim() as any;   
-            if(typeof value === "string" && key === "password") 
-                dto[key] = await this.encryption(value) as any;
-            if(typeof value === 'object'){
+            if(typeof value ==="string"){
+                if(key !== "email")
+                    dto[key] = capitalizeFirstLetter(value) as string;
+                if(key === "email")
+                    dto[key] = value.toLowerCase().trim() as string; 
+                if(key === "password")
+                    dto[key] = await this.encryption(value);
+            }
+            if(typeof value === 'object' && value !== null){
                 for (let [subKey,subValue]of Object.entries(value)){
                     if (typeof subValue != "string") continue;
                     value[subKey] = capitalizeFirstLetter(subValue) as any;
