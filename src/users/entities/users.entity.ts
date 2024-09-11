@@ -1,6 +1,7 @@
 
+import { Journal } from 'src/journal/entities/journal.entity';
 import { UserProfile } from 'src/user-profile/entities/user-profile.entity';
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 
 @Entity()
@@ -14,6 +15,9 @@ export class Users {
     //relazione 1:1. Primo params, fn anonima dove specifichiamo il nome della seconda entità. param 2: key assegnata ad OneTone è il params => params.<nome key dell'altra tabella>. In questo modo sono collegate.
     @OneToOne(()=>UserProfile, profile => profile.users,{ cascade: true })
     profile:UserProfile
+
+    @OneToMany(()=> Journal, journals => journals.user, {cascade:true})
+    journals:Journal[]
 
     @Column({ type: 'varchar', length: 100 })
     nickname:string;

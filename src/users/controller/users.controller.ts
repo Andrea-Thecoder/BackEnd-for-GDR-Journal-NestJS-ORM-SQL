@@ -13,24 +13,24 @@ export class UsersController {
 
 
     @Get()
-    async getAll():Promise<Users[]>{
+    async getAll():Promise<Omit<Users,"password">[]>{
         return this.usersService.findAll();
     }
 
     @Get("/findby-email")
-    async getUserByEmail(@Query("email") email:string):Promise<Users>{
+    async getUserByEmail(@Query("email") email:string):Promise<Omit<Users,"password">>{
         return this.usersService.findUserByEmail(email);
     }
 
     @Get("/:id")
-    async getUserId(@Param('id',ParseIntPipe) id:number):Promise<Users>{
+    async getUserId(@Param('id',ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
         return this.usersService.findUserById(id);
     }
 
     //inviamo una promise in modo che il front possa manipolare il promise in caso di successo o fallimento!
     @Post("/create")
     @UsePipes(new ValidateDtoPipe(CreateUserDto))
-    async createUser(@Body() createUserDto:CreateUserDto):Promise<Users>{
+    async createUser(@Body() createUserDto:CreateUserDto):Promise<Omit<Users,"password">>{
         return this.usersService.createUser(createUserDto);
     }
 
@@ -39,7 +39,8 @@ export class UsersController {
     async updateUser(
         @Param("id",ParseIntPipe) id:number,
         @Body() updateUser:UpdateUserDto
-    ){
+    ):Promise<Omit<Users,"password">>
+    {
         return this.usersService.updateUser(id,updateUser);
     }
 
@@ -48,12 +49,13 @@ export class UsersController {
     async updateUserPassword(
         @Param("id",ParseIntPipe) id:number,
         @Body() updatePassword:updateUserPasswordDto
-    ){
+    ):Promise<Omit<Users,"password">>
+    {
         return this.usersService.updateUserPassword(id,updatePassword);
     }
     
     @Delete("/delete/:id")
-    async deleteUser(@Param("id",ParseIntPipe) id:number):Promise<Users>{
+    async deleteUser(@Param("id",ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
         return this.usersService.deleteUser(id);
     }
 

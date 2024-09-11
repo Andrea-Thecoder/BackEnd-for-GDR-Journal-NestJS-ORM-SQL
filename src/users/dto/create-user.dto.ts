@@ -14,7 +14,6 @@ export class CreateUserDto {
     @IsNotEmpty()
     @IsString()
     @MaxLength(100)
-
     email:string;
 
     @IsNotEmpty()

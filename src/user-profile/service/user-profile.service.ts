@@ -63,8 +63,5 @@ export class UserProfileService {
       }
       throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
     }
-    
-    
-    return null;
   }
 }

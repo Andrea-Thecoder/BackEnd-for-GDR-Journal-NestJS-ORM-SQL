@@ -7,6 +7,7 @@ import { capitalizeFirstLetter } from 'src/utils/utils';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { updateUserPasswordDto } from '../dto/update-password-user.dto';
+import { profile } from 'console';
 
 //il service funziona esattamente come i service di Java springboot quind iqui va la logica di gestione.
 //il service ha bisogno del repository injector preso dalla dipendenza di typeORM
@@ -20,14 +21,16 @@ export class UsersService {
     ){}
 
     //il repository funziona come quand oestendavamo il DTO in java ovvero offre dei method nativi per fare query prefatte sul DB.
-    async findAll():Promise<Users[]>{
+    async findAll():Promise<Omit<Users,"password">[]>{
         try{ //ricorda con async await c'e quasi sempre necessità del blocco try catch, esso gestisce handling degli errori legati all'asincronismo.
             const users:Users[] = await this.usersRepository.find();
 
             //notfound si usa quando la query non restituisce nulla
             if(users.length <= 0 || !users) throw new NotFoundException("No users are in DB");
-            
-            return users;
+            //eseguo un mapping per rimuovere la password, usando la stesas logica che userei per un utente solo ovvero destructuring  scorporando la password dal resto dell'oggetto. il risultato è u narray con gli oggeti User purificati dalla password.
+            const usersWithoutPassword:Omit<Users,"password">[] = users.map(({ password, ...result }) => result);
+
+            return usersWithoutPassword;
         }
         catch(error){
             if (error instanceof NotFoundException) {
@@ -38,15 +41,16 @@ export class UsersService {
         }
     }
 
-    async findUserById(id:number):Promise<Users> {
+    async findUserById(id:number):Promise<Omit<Users,"password">> {
         try{
             if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
-            const user:Users | null = await this.usersRepository.findOne({where: {id}});
+            const user:Users | null = await this.usersRepository.findOne({where: {id},relations:["profile","journals"]});
             if(!user) 
                 throw new NotFoundException(`Not exist user with id: ${id}`); 
             
-            return user;
+            const {password,...result} = user;
+            return result;
         }
         catch(error){
             //inseriamo un controllo di instanza di errore per capire che tipo di errore sia, in questo modo non somma i messaggi personalizzati e non mette tutto nello status 500.
@@ -57,17 +61,18 @@ export class UsersService {
         }
     }
 
-    async findUserByEmail(email:string):Promise<Users> {
+    async findUserByEmail(email:string):Promise<Omit<Users,"password">> {
         try {
             if(!email || typeof email !=="string") throw new BadRequestException("Invalid email value");
             
             email = email.toLocaleLowerCase().trim();
 
-            const user:Users | null = await this.usersRepository.findOne({where: {email}});
+            const user:Users | null = await this.usersRepository.findOne({where: {email},relations:["profile","journals"]});
             if(!user) 
                 throw new NotFoundException(`User with this email: ${email} not exist!`); 
 
-        return user;
+            const {password, ...result} = user
+        return result;
         } 
         catch (error) {
              if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -75,10 +80,9 @@ export class UsersService {
             }
             throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
         }
-        
     }
 
-    async createUser(userDto:CreateUserDto):Promise<Users> {
+    async createUser(userDto:CreateUserDto):Promise<Omit<Users,"password">> {
         try{
             //normalizzazione dei dati
             const userDtoClear:CreateUserDto = await this.capitalizeDtoObject<CreateUserDto>(userDto);
@@ -94,9 +98,10 @@ export class UsersService {
             const newUser:Users = this.usersRepository.create(userDtoClear);
 
             //esegue il POST sul DB di fatto, inserendo nella query i valori dell'oggetto sopra stante.
-            const savedUser= await this.usersRepository.save(newUser);
+            const savedUser:Users = await this.usersRepository.save(newUser);
             if(!savedUser) throw new InternalServerErrorException('Failed to save user. The operation was not successful.')
-            return savedUser; 
+                const {password,...result}= savedUser
+            return result; 
         }
         catch(error){
             if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -106,7 +111,7 @@ export class UsersService {
         }
     }
 
-    async updateUser(id:number,updateDto:UpdateUserDto):Promise<Users>{
+    async updateUser(id:number,updateDto:UpdateUserDto):Promise<Omit<Users,"password">>{
 
         try{
             if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
@@ -120,7 +125,9 @@ export class UsersService {
                 user.nickname = capitalizeFirstLetter(updateDto.nickname);
 
             //infine eseguiamo un save classico.
-            return await this.usersRepository.save(user);
+            const updateUser:Users = await this.usersRepository.save(user);
+            const {password,...result}= updateUser;
+            return result;
         }
         catch(error){
             if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -130,7 +137,7 @@ export class UsersService {
         }
     }
 
-    async updateUserPassword(id:number, passwordDto:updateUserPasswordDto ): Promise<Users> {
+    async updateUserPassword(id:number, passwordDto:updateUserPasswordDto ):Promise<Omit<Users,"password">> {
     try{
         if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
@@ -150,7 +157,9 @@ export class UsersService {
         user.password = hashedNewPass;
     
         //salvataggio nel db della nuova password!E 
-        return await this.usersRepository.save(user);
+        const updateUser:Users = await this.usersRepository.save(user);
+        const {password,...result} = updateUser;
+        return result;
     }
     catch(error){
         if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -161,7 +170,7 @@ export class UsersService {
 
     }
 
-    async deleteUser(id:number):Promise<Users>{
+    async deleteUser(id:number):Promise<Omit<Users,"password">>{
 
         try {
             if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
@@ -171,8 +180,8 @@ export class UsersService {
 
             //ritorna l'intera entità che è stata cancellata.
             const deletedUser: Users = await this.usersRepository.remove(user);
-
-            return deletedUser;
+            const {password,...result}= deletedUser;
+            return result;
 
         }
         catch(error){

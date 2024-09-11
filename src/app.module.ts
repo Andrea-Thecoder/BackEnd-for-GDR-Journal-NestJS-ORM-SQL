@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserProfileModule } from './user-profile/user-profile.module';
 import { APP_PIPE } from '@nestjs/core';
+import { JournalModule } from './journal/journal.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { APP_PIPE } from '@nestjs/core';
       //synchronize : true //USARE SOLO IN SVILUPPO! crea i schemi ogni qualvolta vnegano creati qui in ambiente di sviluppo.
     }),
     UsersModule,
-    UserProfileModule
+    UserProfileModule,
+    JournalModule,
+    AuthModule
   ],
   controllers: [AppController, UsersController],
   providers: [{
