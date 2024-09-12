@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, UseGuards } from '@nestjs/common';
 import { JournalService } from '../service/journal.service';
 import { CreateJournalDto } from '../dto/create-journal.dto';
 import { UpdateJournalDto } from '../dto/update-journal.dto';
 import { Journal } from '../entities/journal.entity';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
+import { LocalAuthGuard } from 'src/guard/auth.guard';
 
+
+@UseGuards(LocalAuthGuard)
 @Controller('/user/journal')
 export class JournalController {
   constructor(private readonly journalService: JournalService) {}

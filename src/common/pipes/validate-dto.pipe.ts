@@ -19,7 +19,7 @@ export class ValidateDtoPipe implements PipeTransform{
         
         //in caso l'array di errori sia compsoto da campi, ovvero maggiore di 0, lancia un errore 
         if (errors.length > 0) 
-            throw new BadRequestException("Not expected field(s) in the body, request rejected!" + errors);
+            throw new BadRequestException("Not expected field(s) in the body, request rejected! " + errors);
 
         return instanceOfDto;
 

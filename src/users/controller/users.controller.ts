@@ -1,10 +1,13 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards, UsePipes } from '@nestjs/common';
 import { UsersService } from '../service/users.service'; 
 import { Users } from '../entities/users.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { updateUserPasswordDto } from '../dto/update-password-user.dto';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
+import { LocalAuthGuard } from 'src/guard/auth.guard';
+
+
 
 @Controller('user')
 export class UsersController {
@@ -13,16 +16,19 @@ export class UsersController {
 
 
     @Get()
+    @UseGuards(LocalAuthGuard)
     async getAll():Promise<Omit<Users,"password">[]>{
         return this.usersService.findAll();
     }
 
     @Get("/findby-email")
+    @UseGuards(LocalAuthGuard)
     async getUserByEmail(@Query("email") email:string):Promise<Omit<Users,"password">>{
         return this.usersService.findUserByEmail(email);
     }
 
     @Get("/:id")
+    @UseGuards(LocalAuthGuard)
     async getUserId(@Param('id',ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
         return this.usersService.findUserById(id);
     }
@@ -35,6 +41,7 @@ export class UsersController {
     }
 
     @Put("/update/:id")
+    @UseGuards(LocalAuthGuard)
     @UsePipes(new ValidateDtoPipe(UpdateUserDto))
     async updateUser(
         @Param("id",ParseIntPipe) id:number,
@@ -45,6 +52,7 @@ export class UsersController {
     }
 
     @Put("/update/password/:id")
+    @UseGuards(LocalAuthGuard)
     @UsePipes(new ValidateDtoPipe(updateUserPasswordDto))
     async updateUserPassword(
         @Param("id",ParseIntPipe) id:number,
@@ -55,10 +63,8 @@ export class UsersController {
     }
     
     @Delete("/delete/:id")
+    @UseGuards(LocalAuthGuard)
     async deleteUser(@Param("id",ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
         return this.usersService.deleteUser(id);
     }
-
-
-
 }

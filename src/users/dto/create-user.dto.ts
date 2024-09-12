@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 import { CreateUserProfileDto } from 'src/user-profile/dto/create-user-profile.dto';
 
 //nota è nei DTO che si fanno i controlli vari.
@@ -13,6 +13,7 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @IsString()
+    @IsEmail()
     @MaxLength(100)
     email:string;
 
