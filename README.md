@@ -8,6 +8,16 @@ Note: remember to switch the part `http://localhost:8080` with your db local add
 
 
 
+Attention: guard are deploy! Now you can navigate without the JWT only in <b>`(/user/auth/login)`</b> for authentication and in <b>`(/user/create)`</b> for SignUp new User. Other route are protected by LocalAuthGuard and request JWT in the req header!
+
+Please for <b>`Auth`</b> use the following EndPoint:
+
+Login `(user/auth/login)`: <br>
+
+POST `http://localhost:8080/user/auth/login` //Free port, JWT not necessary.
+
+<hr>
+
 Please for <b>`User`</b> use the following EndPoint:
 
 Find all Users `(/user)`: <br>
@@ -20,7 +30,7 @@ GET `http://localhost:8080/user/:id`
 
 Create new User `(/user/create)`:<br>
 
-POST `http://localhost:8080/user/create`
+POST `http://localhost:8080/user/create` //Free port, JWT not necessary.
 
 Update User by Id `(/user/update/:id)`:<br>
 
@@ -33,6 +43,24 @@ PUT `http://localhost:8080/user/update/password/:id`
 Delete User by Id `(/user/delete/:id)`:<br>
 
 DELETE `http://localhost:8080/user/delete/:id`
+
+<hr>
+
+Please for <b>`UserProfile`</b> use the following EndPoint:
+
+Get UserProfile by UserId `(/user/profile/:userId)`: <br>
+
+GET `http://localhost:8080/user/profile/:userId` 
+
+Update UserProfile by UserId `(/user/profile/update/:userId)`: <br>
+
+PUT `http://localhost:8080/user/profile/update/:userId`
+
+<hr>
+
+
+
+
 
 
 
