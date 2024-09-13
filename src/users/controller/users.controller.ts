@@ -6,6 +6,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { updateUserPasswordDto } from '../dto/update-password-user.dto';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
+import { User } from 'src/common/decorator/user.decorator';
 
 
 
@@ -15,6 +16,7 @@ export class UsersController {
     constructor(private readonly usersService:UsersService){}
 
 
+    //valuta se tenere questa rotta operativa o meno i nquanto pottrebbe esserci una possibile violazione della privacy collegata ad essa returnando l'intero DB.
     @Get()
     @UseGuards(LocalAuthGuard)
     async getAll():Promise<Omit<Users,"password">[]>{
@@ -27,10 +29,10 @@ export class UsersController {
         return this.usersService.findUserByEmail(email);
     }
 
-    @Get("/:id")
+    @Get("/find")
     @UseGuards(LocalAuthGuard)
-    async getUserId(@Param('id',ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
-        return this.usersService.findUserById(id);
+    async getUserId(@User("userId",ParseIntPipe) userId:number):Promise<Omit<Users,"password">>{
+        return this.usersService.findUserById(userId);
     }
 
     //inviamo una promise in modo che il front possa manipolare il promise in caso di successo o fallimento!
@@ -40,31 +42,31 @@ export class UsersController {
         return this.usersService.createUser(createUserDto);
     }
 
-    @Put("/update/:id")
+    @Put("/update")
     @UseGuards(LocalAuthGuard)
     @UsePipes(new ValidateDtoPipe(UpdateUserDto))
     async updateUser(
-        @Param("id",ParseIntPipe) id:number,
+        @User("userId",ParseIntPipe) userId:number,
         @Body() updateUser:UpdateUserDto
     ):Promise<Omit<Users,"password">>
     {
-        return this.usersService.updateUser(id,updateUser);
+        return this.usersService.updateUser(userId,updateUser);
     }
 
-    @Put("/update/password/:id")
+    @Put("/update/password")
     @UseGuards(LocalAuthGuard)
     @UsePipes(new ValidateDtoPipe(updateUserPasswordDto))
     async updateUserPassword(
-        @Param("id",ParseIntPipe) id:number,
+        @User("userId",ParseIntPipe) userId:number,
         @Body() updatePassword:updateUserPasswordDto
     ):Promise<Omit<Users,"password">>
     {
-        return this.usersService.updateUserPassword(id,updatePassword);
+        return this.usersService.updateUserPassword(userId,updatePassword);
     }
     
-    @Delete("/delete/:id")
+    @Delete("/remove")
     @UseGuards(LocalAuthGuard)
-    async deleteUser(@Param("id",ParseIntPipe) id:number):Promise<Omit<Users,"password">>{
-        return this.usersService.deleteUser(id);
+    async deleteUser(@User("userId",ParseIntPipe) userId:number):Promise<Omit<Users,"password">>{
+        return this.usersService.deleteUser(userId);
     }
 }

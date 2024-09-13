@@ -1,5 +1,6 @@
+import { JournalPage } from "src/journal-page/entities/journal-page.entity";
 import { Users } from "src/users/entities/users.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
 
@@ -9,10 +10,12 @@ export class Journal {
     @PrimaryGeneratedColumn({type: "int", unsigned: true}) //AI (auto incrementa)
     id: number;
 
-    @ManyToOne(()=> Users, user => user.journals, {nullable: false})
+    @ManyToOne(()=> Users, user => user.journals, {nullable: false,onDelete: 'CASCADE'})
     @JoinColumn({name:"userId", referencedColumnName: "id"})
     user:Users
-   
+
+    @OneToMany(()=> JournalPage, pages => pages.journal, {cascade:true})
+    pages:JournalPage[]
 
     @Column({type: "int", unsigned: true})
     userId:number
@@ -25,9 +28,6 @@ export class Journal {
 
     @Column({ type: 'varchar', length: 255 })
     gameUrl:string;
-
-    //@Column({ type: "date"}) 
-    //book: string;
 
     @CreateDateColumn({ type: 'timestamp'}) 
     createdAt: Date;

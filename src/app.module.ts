@@ -8,6 +8,7 @@ import { UserProfileModule } from './user-profile/user-profile.module';
 import { APP_PIPE } from '@nestjs/core';
 import { JournalModule } from './journal/journal.module';
 import { AuthModule } from './auth/auth.module';
+import { JournalPageModule } from './journal-page/journal-page.module';
 
 @Module({
   imports: [
@@ -20,11 +21,13 @@ import { AuthModule } from './auth/auth.module';
       database: "dnddb", //nome del db
       entities: [__dirname + '/**/entities/*.entity{.ts,.js}'], //lista delle entità create in Nestjs! possiamo inserire il nome di ogni entità oppure come scritto sopra ch se le cerca lui!
       //synchronize : true //USARE SOLO IN SVILUPPO! crea i schemi ogni qualvolta vnegano creati qui in ambiente di sviluppo.
+      //logging: true //serve per attivare il log nel terminare
     }),
     UsersModule,
     UserProfileModule,
     JournalModule,
-    AuthModule
+    AuthModule,
+    JournalPageModule
   ],
   controllers: [AppController, UsersController],
   providers: [{

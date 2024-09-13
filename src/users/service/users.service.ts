@@ -45,7 +45,16 @@ export class UsersService {
         try{
             if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
 
-            const user:Users | null = await this.usersRepository.findOne({where: {id},relations:["profile","journals"]});
+            const user:Users | null = await this.usersRepository.findOne({
+                where: {id},
+                relations: { //relazione complessa, è un oggetto e va a caricare anceh gli annidamenti se flaggato true!
+                    profile: true,
+                    journals: {
+                        pages: true
+                    }
+                }
+                //relations:["profile","journals"] //relazioni semplici, non va a prendere gli annidiament iin profondità!
+            });
             if(!user) 
                 throw new NotFoundException(`Not exist user with id: ${id}`); 
             
