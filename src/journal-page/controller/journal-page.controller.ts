@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, UsePipes, Put } from '@nestjs/common';
 import { JournalPageService } from '../service/journal-page.service';
 import { CreateJournalPageDto } from '../dto/create-journal-page.dto';
 import { UpdateJournalPageDto } from '../dto/update-journal-page.dto';
@@ -23,6 +23,16 @@ export class JournalPageController {
     console.log(userId,journalId,typeof userId,typeof journalId)
     return this.journalPageService.findPagesByJournalId(userId,journalId);
   }
+
+  @Get("/:id")
+  async findPageById(
+    @User("userId",ParseIntPipe) userId:number,
+    @Query('journalId',ParseIntPipe) journalId:number,
+    @Param("id",ParseIntPipe) pageId:number
+  ):Promise<JournalPage>
+  {
+    return this.journalPageService.findPageById(userId,journalId,pageId);
+  }
   
   @Post("/add-page")
   @UsePipes(new ValidateDtoPipe(CreateJournalPageDto))
@@ -35,18 +45,24 @@ export class JournalPageController {
     return this.journalPageService.createPage(userId,journalId,createJournalPageDto)
   }
 
-  /* @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.journalPageService.findOne(+id);
-  } */
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJournalPageDto: UpdateJournalPageDto) {
-    return this.journalPageService.update(+id, updateJournalPageDto);
+  @Put('/update/:id')
+  @UsePipes(new ValidateDtoPipe(UpdateJournalPageDto))
+  updatePageById(
+    @User("userId",ParseIntPipe) userId:number,
+    @Query('journalId',ParseIntPipe) journalId:number,
+    @Param("id",ParseIntPipe) pageId:number,
+    @Body() updateJournalPageDto: UpdateJournalPageDto
+  ):Promise<JournalPage> 
+  {
+    return this.journalPageService.updatePageById(userId,journalId,pageId,updateJournalPageDto)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.journalPageService.remove(+id);
+  @Delete('/remove/:id')
+  async deletePageById(
+    @User("userId",ParseIntPipe) userId:number,
+    @Query('journalId',ParseIntPipe) journalId:number,
+    @Param("id",ParseIntPipe) pageId:number,
+  ) {
+    return this.journalPageService.deletePageById(userId,journalId,pageId);
   }
 }

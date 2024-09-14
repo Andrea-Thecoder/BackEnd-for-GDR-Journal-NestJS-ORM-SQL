@@ -4,5 +4,9 @@ export const capitalizeFirstLetter =(str:string):string => {
 }
 
 
+export const validateID = (value:number):boolean => {
+    return typeof value === "number" && value > 0 ;
+} 
+
 
 
