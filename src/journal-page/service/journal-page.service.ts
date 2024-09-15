@@ -19,11 +19,8 @@ export class JournalPageService {
 
   async findPagesByJournalId(userId:number,journalId:number):Promise<JournalPage[]> {
     try {
-      if (
-        !userId || userId<=0 || typeof userId !== "number" ||
-        !journalId || journalId<=0 || typeof journalId !== "number"
-        ) 
-          throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId) || !validateID(journalId))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       const journal:Journal = await this.journalRepository.findOne({where:{userId,id:journalId}})
       if(!journal) throw new InternalServerErrorException('No journal founded.');

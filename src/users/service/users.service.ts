@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../entities/users.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { capitalizeFirstLetter } from 'src/utils/utils';
+import { capitalizeFirstLetter, validateID } from 'src/utils/utils';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { updateUserPasswordDto } from '../dto/update-password-user.dto';
@@ -23,7 +23,13 @@ export class UsersService {
     //il repository funziona come quand oestendavamo il DTO in java ovvero offre dei method nativi per fare query prefatte sul DB.
     async findAll():Promise<Omit<Users,"password">[]>{
         try{ //ricorda con async await c'e quasi sempre necessità del blocco try catch, esso gestisce handling degli errori legati all'asincronismo.
-            const users:Users[] = await this.usersRepository.find();
+            const users:Users[] = await this.usersRepository.find({
+                relations: { //relazione complessa, è un oggetto e va a caricare anceh gli annidamenti se flaggato true!
+                    profile: true,
+                    journals: {
+                        pages: true
+                    }
+            }});
 
             //notfound si usa quando la query non restituisce nulla
             if(users.length <= 0 || !users) throw new NotFoundException("No users are in DB");
@@ -43,7 +49,8 @@ export class UsersService {
 
     async findUserById(id:number):Promise<Omit<Users,"password">> {
         try{
-            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
+            if(!validateID(id))
+                throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
             const user:Users | null = await this.usersRepository.findOne({
                 where: {id},
@@ -76,7 +83,15 @@ export class UsersService {
             
             email = email.toLocaleLowerCase().trim();
 
-            const user:Users | null = await this.usersRepository.findOne({where: {email},relations:["profile","journals"]});
+            const user:Users | null = await this.usersRepository.findOne({
+                where: {email},
+                relations: {
+                    profile: true,
+                    journals: {
+                        pages: true
+                    }
+                }
+            });
             if(!user) 
                 throw new NotFoundException(`User with this email: ${email} not exist!`); 
 
@@ -123,7 +138,8 @@ export class UsersService {
     async updateUser(id:number,updateDto:UpdateUserDto):Promise<Omit<Users,"password">>{
 
         try{
-            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
+            if(!validateID(id))
+                throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
             const user:Users | null = await this.usersRepository.findOne({where: {id}});
             if(!user) throw new  BadRequestException("User not exist!")
@@ -148,7 +164,8 @@ export class UsersService {
 
     async updateUserPassword(id:number, passwordDto:updateUserPasswordDto ):Promise<Omit<Users,"password">> {
     try{
-        if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
+        if(!validateID(id))
+            throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
         const user:Users | null = await this.usersRepository.findOne({where: {id}});
         if(!user) throw new  BadRequestException("User not exist!")
@@ -182,7 +199,8 @@ export class UsersService {
     async deleteUser(id:number):Promise<Omit<Users,"password">>{
 
         try {
-            if (!id || id<=0 || typeof id !=="number") throw new BadRequestException("Id value no permitted. They be a number positive and greater than 0");
+            if(!validateID(id))
+                throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
             const user:Users | null = await this.usersRepository.findOne({where: {id}});
             if(!user) throw new  BadRequestException("User not exist!")

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, UsePipes, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards, UsePipes, Put, HttpStatus } from '@nestjs/common';
 import { JournalPageService } from '../service/journal-page.service';
 import { CreateJournalPageDto } from '../dto/create-journal-page.dto';
 import { UpdateJournalPageDto } from '../dto/update-journal-page.dto';
@@ -7,6 +7,8 @@ import { User } from 'src/common/decorator/user.decorator';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
+import { ApiResponse } from '@nestjs/swagger';
+import { APIResponse } from 'src/common/interfaces/api-response.interface';
 
 @UseGuards(LocalAuthGuard)
 @Controller('user/journal/page')
@@ -19,9 +21,14 @@ export class JournalPageController {
     @User("userId",ParseIntPipe) userId:number,
     @Query('journalId',ParseIntPipe) journalId:number
 
-  ):Promise<JournalPage[]>
+  ):Promise<APIResponse<JournalPage[]>>
   {
-    return this.journalPageService.findPagesByJournalId(userId,journalId);
+    const APIResponse:APIResponse<JournalPage[]> = {
+      statusCode: HttpStatus.OK,
+      data: await this.journalPageService.findPagesByJournalId(userId,journalId)
+    }
+    return APIResponse
+    //return this.journalPageService.findPagesByJournalId(userId,journalId);
   }
 
   @Get("/:id")
@@ -29,9 +36,13 @@ export class JournalPageController {
     @User("userId",ParseIntPipe) userId:number,
     @Query('journalId',ParseIntPipe) journalId:number,
     @Param("id",ParseIntPipe) pageId:number
-  ):Promise<JournalPage>
+  ):Promise<APIResponse<JournalPage>>
   {
-    return this.journalPageService.findPageById(userId,journalId,pageId);
+    const APIResponse:APIResponse<JournalPage> = {
+      statusCode: HttpStatus.OK,
+      data: await this.journalPageService.findPageById(userId,journalId,pageId)
+    }
+    return APIResponse
   }
   
   @Post("/add-page")

@@ -4,7 +4,7 @@ import { UpdateJournalDto } from '../dto/update-journal.dto';
 import { Journal } from '../entities/journal.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { capitalizeFirstLetter } from 'src/utils/utils';
+import { capitalizeFirstLetter, validateID } from 'src/utils/utils';
 
 
 @Injectable()
@@ -18,7 +18,8 @@ export class JournalService {
   async findAllJournalByUserId(userId:number):Promise<Journal[]> {
 
     try {
-      if (!userId || userId<=0 || typeof userId !== "number") throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       const allUserJournal = await this.journalRepository.find({where:{userId},relations:['pages']})
       if(!allUserJournal) throw new NotFoundException(`No journals exist for User having id: ${userId}`);
@@ -55,11 +56,8 @@ export class JournalService {
 
   async findJournalById(id: number, userId:number):Promise<Journal> {
     try {
-      if (
-        !userId || userId<=0 || typeof userId !== "number" ||
-        !id || id<=0 || typeof id !== "number"
-        ) 
-          throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId) || !validateID(id))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
      
       const journal:Journal = await this.journalRepository.findOne({where:{id,userId},relations:['pages']});
       if(!journal) throw new InternalServerErrorException('No journal founded.')
@@ -75,11 +73,8 @@ export class JournalService {
 
   async updateJournalById(id: number, userId:number, updateJournalDto: UpdateJournalDto):Promise<Journal> {
     try {
-      if (
-        !userId || userId<=0 || typeof userId !== "number" ||
-        !id || id<=0 || typeof id !== "number"
-        ) 
-          throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId) || !validateID(id))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       if(Object.keys(updateJournalDto).length === 0) 
         throw new BadRequestException('Update fields are empty or not provided');
@@ -107,11 +102,8 @@ export class JournalService {
 
   async deleteJournal(id: number, userId:number):Promise<Journal> {
     try {
-      if (
-        !userId || userId<=0 || typeof userId !== "number" ||
-        !id || id<=0 || typeof id !== "number"
-        ) 
-          throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId) || !validateID(id))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       const journal:Journal = await this.journalRepository.findOne({where:{id,userId}});
       if(!journal) throw new InternalServerErrorException('No journal founded.')

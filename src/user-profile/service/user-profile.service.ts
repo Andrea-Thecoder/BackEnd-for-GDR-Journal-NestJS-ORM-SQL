@@ -3,7 +3,7 @@ import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { UserProfile } from '../entities/user-profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { capitalizeFirstLetter } from 'src/utils/utils';
+import { capitalizeFirstLetter, validateID } from 'src/utils/utils';
 
 @Injectable()
 export class UserProfileService {
@@ -17,7 +17,8 @@ export class UserProfileService {
   async FindUserProfileById(userId: number):Promise<UserProfile> {
 
     try {
-      if (!userId || userId<=0 || typeof userId !== "number") throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       const userProfile:UserProfile = await this.userProfileRepository.findOne({where:{ userId }});
       if(!userProfile) throw new NotFoundException(`Not exist user with id: ${userId}`);
@@ -35,7 +36,8 @@ export class UserProfileService {
   async updateUserProfile(userId: number, updateUserProfileDto: UpdateUserProfileDto):Promise<UserProfile> {
     try {
 
-      if (!userId || userId<=0 ) throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
+      if(!validateID(userId))
+        throw new BadRequestException("Id value no permitted. They be a number, positive and greater than 0");
 
       if(Object.keys(updateUserProfileDto).length === 0) 
         throw new BadRequestException('Update fields are empty or not provided');
