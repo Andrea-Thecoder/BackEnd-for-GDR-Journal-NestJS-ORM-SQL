@@ -5,6 +5,7 @@ import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 import { UserProfile } from '../entities/user-profile.entity';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
 import { User } from 'src/common/decorator/user.decorator';
+import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
 
 @UseGuards(LocalAuthGuard)
 @Controller('user/profile')
@@ -19,7 +20,7 @@ export class UserProfileController {
   }
 
   @Put('/update')
-  @UsePipes(new ValidateDtoPipe(UpdateUserProfileDto))
+  @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(UpdateUserProfileDto))
   updateUserProfile(
     @User("userId",ParseIntPipe) userId:number, 
     @Body() updateUserProfileDto: UpdateUserProfileDto

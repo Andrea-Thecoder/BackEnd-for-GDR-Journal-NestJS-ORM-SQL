@@ -7,6 +7,7 @@ import { updateUserPasswordDto } from '../dto/update-password-user.dto';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
 import { User } from 'src/common/decorator/user.decorator';
+import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
 
 
 
@@ -37,14 +38,14 @@ export class UsersController {
 
     //inviamo una promise in modo che il front possa manipolare il promise in caso di successo o fallimento!
     @Post("/create")
-    @UsePipes(new ValidateDtoPipe(CreateUserDto))
+    @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(CreateUserDto))
     async createUser(@Body() createUserDto:CreateUserDto):Promise<Omit<Users,"password">>{
         return this.usersService.createUser(createUserDto);
     }
 
     @Put("/update")
     @UseGuards(LocalAuthGuard)
-    @UsePipes(new ValidateDtoPipe(UpdateUserDto))
+    @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(UpdateUserDto))
     async updateUser(
         @User("userId",ParseIntPipe) userId:number,
         @Body() updateUser:UpdateUserDto
@@ -55,7 +56,7 @@ export class UsersController {
 
     @Put("/update/password")
     @UseGuards(LocalAuthGuard)
-    @UsePipes(new ValidateDtoPipe(updateUserPasswordDto))
+    @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(updateUserPasswordDto))
     async updateUserPassword(
         @User("userId",ParseIntPipe) userId:number,
         @Body() updatePassword:updateUserPasswordDto

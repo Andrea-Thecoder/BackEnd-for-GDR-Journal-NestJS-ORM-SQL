@@ -9,6 +9,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { JournalModule } from './journal/journal.module';
 import { AuthModule } from './auth/auth.module';
 import { JournalPageModule } from './journal-page/journal-page.module';
+import { RateLimiterModule } from 'nestjs-rate-limiter'; //serve per limitare il numero di rciheste in u ndetermianto arco temporale, aiutando cosi nella prevenzione da attacchi DoS! può essere anche usato tramite decorator nei controller
 
 @Module({
   imports: [
@@ -22,6 +23,11 @@ import { JournalPageModule } from './journal-page/journal-page.module';
       entities: [__dirname + '/**/entities/*.entity{.ts,.js}'], //lista delle entità create in Nestjs! possiamo inserire il nome di ogni entità oppure come scritto sopra ch se le cerca lui!
       //synchronize : true //USARE SOLO IN SVILUPPO! crea i schemi ogni qualvolta vnegano creati qui in ambiente di sviluppo.
       //logging: true //serve per attivare il log nel terminare
+    }),
+    RateLimiterModule.register({
+      for: 'Express',  //tipo di app che sta girando, nel nostro caso express
+      points: 10, //numero di richieste fattibili nell'arco temporale definito
+      duration: 60, //arco temporale definito per il nmreo di points, espresso in secondi
     }),
     UsersModule,
     UserProfileModule,

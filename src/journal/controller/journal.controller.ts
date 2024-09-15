@@ -6,6 +6,7 @@ import { Journal } from '../entities/journal.entity';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
 import { User } from 'src/common/decorator/user.decorator';
+import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
 
 
 @UseGuards(LocalAuthGuard)
@@ -31,7 +32,7 @@ export class JournalController {
   }
   
   @Post("/add-journal")
-  @UsePipes(new ValidateDtoPipe(CreateJournalDto))
+  @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(CreateJournalDto))
   async createJournal(
     @User("userId",ParseIntPipe) userId:number,
     @Body() createJournalDto: CreateJournalDto
@@ -41,7 +42,7 @@ export class JournalController {
   }
 
   @Put('/update')
-  @UsePipes(new ValidateDtoPipe(UpdateJournalDto))
+  @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(UpdateJournalDto))
   async update(
     @User("userId",ParseIntPipe) userId:number,
     @Param('id',ParseIntPipe) id: number,
@@ -60,3 +61,5 @@ export class JournalController {
     return this.journalService.deleteJournal(id,userId);
   }
 }
+
+

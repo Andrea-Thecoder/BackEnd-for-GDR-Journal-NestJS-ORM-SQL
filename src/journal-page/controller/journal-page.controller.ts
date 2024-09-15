@@ -6,6 +6,7 @@ import { JournalPage } from '../entities/journal-page.entity';
 import { User } from 'src/common/decorator/user.decorator';
 import { LocalAuthGuard } from 'src/guard/auth.guard';
 import { ValidateDtoPipe } from 'src/common/pipes/validate-dto.pipe';
+import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
 
 @UseGuards(LocalAuthGuard)
 @Controller('user/journal/page')
@@ -20,7 +21,6 @@ export class JournalPageController {
 
   ):Promise<JournalPage[]>
   {
-    console.log(userId,journalId,typeof userId,typeof journalId)
     return this.journalPageService.findPagesByJournalId(userId,journalId);
   }
 
@@ -35,18 +35,20 @@ export class JournalPageController {
   }
   
   @Post("/add-page")
-  @UsePipes(new ValidateDtoPipe(CreateJournalPageDto))
-  async create(
+  //possiamo usare un sol odecorator per piu custom pipes. In questo caso l'ordine di attivazioen sarà da sinistra verso destra, ovvero l'ordine dichiarato. Invece se usassiamo piu decorator usepipe l'ordine sarà inverso ovvero verrà chiamata prima l'ultima scritta in ordine di riga e poi risale fino alla prima.
+  @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(CreateJournalPageDto))
+  async createPage(
     @User("userId",ParseIntPipe) userId:number,
     @Query('journalId',ParseIntPipe) journalId:number,
     @Body() createJournalPageDto: CreateJournalPageDto
   ):Promise<JournalPage>
   {
+    console.log("schigfo")
     return this.journalPageService.createPage(userId,journalId,createJournalPageDto)
   }
 
   @Put('/update/:id')
-  @UsePipes(new ValidateDtoPipe(UpdateJournalPageDto))
+  @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(UpdateJournalPageDto))
   updatePageById(
     @User("userId",ParseIntPipe) userId:number,
     @Query('journalId',ParseIntPipe) journalId:number,

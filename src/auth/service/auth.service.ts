@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/service/users.service';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/users/entities/users.entity';
 import { Repository } from 'typeorm';
+import { LoginDto } from '../dto/login.dto';
 
 
 @Injectable()
@@ -26,7 +27,7 @@ export class AuthService {
             if(!user) throw new NotFoundException(`User with this email: ${email} not exist!`); 
             //la soluzione qui è di fare la query interna. Ricordati queto doman iquando prosegui!
             const isMatch:boolean = await bcrypt.compare(loginPassword.trim(), user.password);
-            if(!isMatch) throw new BadRequestException("Current Password is incorrect!");
+            if(!isMatch) throw new BadRequestException("Password is incorrect!");
             const {password,...result}= user;
             return result;
         } 
@@ -37,12 +38,24 @@ export class AuthService {
         }
     }
 
-    async login(user: any) {
-        const payload = { email: user.email, id: user.id }; // Dati inclusi nel token
-        return {
-          access_token: this.jwtService.sign(payload), // Firma il token
-        };
-      }
+    async login(body:LoginDto) {
+        try{
+            const { email, password } = body;
+            const user:Omit<Users,"password"> = await this.validateUser(email, password);
+            
+            if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+            }
 
-
+            const payload = { email: user.email, id: user.id }; // Dati inclusi nel token
+            return {
+            access_token: this.jwtService.sign(payload), // Firma il token
+            };
+        }
+        catch (error) {
+            if (error instanceof NotFoundException || error instanceof BadRequestException) 
+                throw error;
+            throw new InternalServerErrorException ("Error while retrieving data. " + error.message);
+        }
+    }
 }

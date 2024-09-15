@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JournalPageController } from './journal-page.controller';
-import { JournalPageService } from './journal-page.service';
+import { JournalPageService } from '../service/journal-page.service'; 
 
 describe('JournalPageController', () => {
   let controller: JournalPageController;
