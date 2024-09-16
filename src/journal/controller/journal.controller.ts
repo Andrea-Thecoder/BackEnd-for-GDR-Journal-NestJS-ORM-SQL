@@ -35,7 +35,7 @@ export class JournalController {
     return APIResponse;
   }
 
-  @Get('/:id')
+  @Get('/:journalId')
   @ApiOperation({
     summary: 'Get journal by journalId for the user',
     description: 'Retrieve journal by journalId for the authenticated user. The userId is automatically extracted from the JWT token.'
@@ -73,7 +73,7 @@ export class JournalController {
     return APIResponse;
   }
 
-  @Put('/update')
+  @Put('/update/:journalId')
   @UsePipes(new SanitizeHtmlPipe(),new ValidateDtoPipe(UpdateJournalDto))
   @ApiOperation({
     summary: 'Update journal by journalId for the user',
@@ -94,7 +94,7 @@ export class JournalController {
     return APIResponse;
   }
 
-  @Delete('/remove')
+  @Delete('/remove/:journalId')
   @ApiOperation({
     summary: 'Delete journal by journalId for the user',
     description: 'Delete journal by journalId for the authenticated user. The userId is automatically extracted from the JWT token.'
