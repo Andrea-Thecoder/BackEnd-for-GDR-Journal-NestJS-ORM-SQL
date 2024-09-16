@@ -10,9 +10,11 @@ import { User } from 'src/common/decorator/user.decorator';
 import { SanitizeHtmlPipe } from 'src/common/pipes/sanificate-html.pipe';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { APIResponse } from 'src/common/interfaces/api-response.interface';
+import { GroupApiResponses } from 'src/common/decorator/api-response.decorator';
+import { ApiResponseDto } from '../dto/api-response-user.dto';
 
 
-@ApiTags("user")
+@ApiTags("User")
 @Controller('user')
 export class UsersController {
 
@@ -24,11 +26,7 @@ export class UsersController {
     @UseGuards(LocalAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({summary:"Get all User present in the db"})
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">[]>>,
-    })
+    @GroupApiResponses(ApiResponseDto)
     async getAll():Promise<APIResponse<Omit<Users,"password">[]>>
     {
         const APIResponse:APIResponse<Omit<Users,"password">[]> = {
@@ -43,11 +41,7 @@ export class UsersController {
     @ApiBearerAuth()
     @ApiOperation({summary:"Get the user by email address"})
     @ApiQuery({name:"email", type: String, description: "The email address of the user to find", required:true})
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(ApiResponseDto)
     async getUserByEmail(@Query("email") email:string):Promise<APIResponse<Omit<Users,"password">>>
     {
         const APIResponse:APIResponse<Omit<Users,"password">> = {
@@ -55,17 +49,14 @@ export class UsersController {
             data: await this.usersService.findUserByEmail(email)
           }
         return APIResponse;
+        
     }
 
     @Get("/find")
     @UseGuards(LocalAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({summary:"Get the user by the userId.",description:"Get the user details based on the userId extracted from the JWT token. No need to specify the userId manually as it is obtained automatically from the authenticated user."})
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(ApiResponseDto)
     async getUserId(@User("userId",ParseIntPipe) userId:number):Promise<APIResponse<Omit<Users,"password">>>
     {
         const APIResponse:APIResponse<Omit<Users,"password">> = {
@@ -83,11 +74,7 @@ export class UsersController {
         description:"The data required to create a new user. Ensure all fields are correctly formatted.",
         type: CreateUserDto
     })
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(CreateUserDto)
     async createUser(@Body() createUserDto:CreateUserDto):Promise<APIResponse<Omit<Users,"password">>>
     {
         const APIResponse:APIResponse<Omit<Users,"password">> = {
@@ -106,11 +93,7 @@ export class UsersController {
         description:"The data required to update user's nickname. Ensure all fields are correctly formatted.",
         type: UpdateUserDto
     })
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(CreateUserDto)
     async updateUser(
         @User("userId",ParseIntPipe) userId:number,
         @Body() updateUser:UpdateUserDto
@@ -132,11 +115,7 @@ export class UsersController {
         description:"The data required to update user's password. Ensure all fields are correctly formatted.",
         type: updateUserPasswordDto
     })
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(CreateUserDto)
     async updateUserPassword(
         @User("userId",ParseIntPipe) userId:number,
         @Body() updatePassword:updateUserPasswordDto
@@ -145,7 +124,7 @@ export class UsersController {
         const APIResponse:APIResponse<Omit<Users,"password">> = {
             statusCode: HttpStatus.OK,
             data: await this.usersService.updateUserPassword(userId,updatePassword)
-          }
+            }
         return APIResponse;
     }
     
@@ -154,11 +133,7 @@ export class UsersController {
     @ApiBearerAuth()
     @ApiOperation({summary: "Delete all database records for the user account.",
         description: "Deletes the account for the authenticated user. The details are based on the userId extracted from the JWT token. There is no need to specify the userId manually as it is automatically obtained from the authenticated user."})
-    @ApiResponse({
-        status: 200,
-        description: 'Successfully retrieved data',
-        type: Promise<APIResponse<Omit<Users,"password">>>,
-    })
+    @GroupApiResponses(CreateUserDto)
     async deleteUser(@User("userId",ParseIntPipe) userId:number):Promise<APIResponse<Omit<Users,"password">>>
     {
         const APIResponse:APIResponse<Omit<Users,"password">> = {
