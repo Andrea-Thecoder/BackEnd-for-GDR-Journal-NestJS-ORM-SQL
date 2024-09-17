@@ -10,5 +10,5 @@ export function setupSwagger(app: INestApplication): void {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('rpg-api', app, document); // Imposta l'endpoint della documentazione
+  SwaggerModule.setup('api', app, document); // Imposta l'endpoint della documentazione
 }
